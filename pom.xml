@@ -1,0 +1,88 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.microsoft.cosmos.gremlin</groupId>
+  <artifactId>kafka-connect-cosmosdb-graph</artifactId>
+  <version>0.1</version>
+  <packaging>jar</packaging>
+
+  <name>kafka-connect-cosmosdb-graph</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <kafka.version>2.2.0</kafka.version>
+    <tinkerpop.version>3.4.1</tinkerpop.version>
+    <maven.compiler.version>3.0</maven.compiler.version>
+    <junit.version>5.0.0-M2</junit.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    
+	<dependency>
+		<groupId>org.apache.kafka</groupId>
+		<artifactId>connect-api</artifactId>
+		<version>${kafka.version}</version>
+		<scope>provided</scope>
+	</dependency>
+
+    <dependency>
+		<groupId>org.apache.tinkerpop</groupId>
+		<artifactId>gremlin-driver</artifactId>
+		<version>${tinkerpop.version}</version>
+	</dependency>
+
+    <dependency>
+		<groupId>org.junit.jupiter</groupId>
+		<artifactId>junit-jupiter-api</artifactId>
+		<version>${junit.version}</version>
+	</dependency>
+      
+  </dependencies>
+  
+  <build>
+	<pluginManagement>
+		<plugins>
+			<plugin>
+	        	<groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-compiler-plugin</artifactId>
+		        <version>${maven.compiler.version}</version>
+	    	    <configuration>
+		          <source>1.8</source>
+		          <target>1.8</target>
+	    	    </configuration>
+	      	</plugin>		
+		</plugins>  
+	</pluginManagement>  
+    <plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-dependency-plugin</artifactId>
+			<version>2.6</version>
+			<executions>
+				<execution>
+					<id>copy-dependencies</id>
+					<phase>prepare-package</phase>
+					<goals>
+						<goal>copy-dependencies</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+						<overWriteReleases>false</overWriteReleases>
+						<overWriteSnapshots>false</overWriteSnapshots>
+						<overWriteIfNewer>true</overWriteIfNewer>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+    </plugins>
+  </build>
+  
+</project>
