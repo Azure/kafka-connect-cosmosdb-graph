@@ -1,4 +1,5 @@
- Kafka Connect Cosmos DB Graph
+# Apache Kafka connector for Cosmos DB Gremlin API
+
 This is a sink connector from [Apache Kafka](https://kafka.apache.org/documentation/#connect) into [Microsoft Azure Cosmos DB Graph](https://docs.microsoft.com/en-us/azure/cosmos-db/graph-introduction) account. It allows modelling events as vertices and edges of a graph and manipulating them using [Apache Tinkerpop Gremlin](https://tinkerpop.apache.org/gremlin.html) language.
 
 This connector supports primitive, Binary, Json and Avro serializers.
