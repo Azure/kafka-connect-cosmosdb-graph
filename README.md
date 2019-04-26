@@ -42,7 +42,7 @@ To start using connector please open your Confluence Control Center and navigate
 
 On the next page please select **KafkaGremlinSinkConnector**. If this connector is not available, likely Connect worker did not pick up the changes and it is recommended to restart worker again and let him finish directory scan before trying to add a connector again.
 
-![Cosmos DB Graph Connector Configuration](/doc/gremlinconnectorconfig.png)
+![Cosmos DB Graph Connector Configuration](/doc/gremlinconnectorconfig.jpg)
 
 **host** - fully qualified domain name of gremlin account. Please specify DNS record in zone **gremlin.cosmos.azure.com** for public Azure. Please do not put **documents.azure.com**, it will not work.
 
