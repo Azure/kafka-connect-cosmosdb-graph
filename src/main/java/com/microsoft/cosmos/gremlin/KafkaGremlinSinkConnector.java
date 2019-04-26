@@ -39,18 +39,80 @@ public final class KafkaGremlinSinkConnector extends SinkConnector {
         static final String RECORD_WRITE_RETRY_MILLISECONDS = "recordWriteRetryMilliseconds";
     }
     
+    static final int DEFAULT_PORT = 443;
+    static final boolean DEFAULT_ENABLE_SKIP_ON_CONFLICT = false;
+    static final boolean DEFAULT_ENABLE_SSL = true;
+    static final int DEFAULT_MAX_WAIT_FOR_CONNECTION_MILLISECONDS = 15000;
+    static final int DEFAULT_RECORD_WRITE_RETRY_COUNT = 3;
+    static final int DEFAULT_RECORD_WRITE_RETRY_MILLISECONDS = 1000;
+    
     private static final ConfigDef CONFIG_DEF = new ConfigDef()
-            .define(Keys.HOST, Type.STRING, "", Importance.HIGH, "Microsoft Azure Cosmos Gremlin Accounty fully qualified name in the format *.gremlin.cosmos.azure.com")
-            .define(Keys.PORT, Type.INT, 443, Importance.HIGH, "Port number to which to send traffic at the host")
-            .define(Keys.DATABASE, Type.STRING, "", Importance.HIGH, "Database inside global database account")
-            .define(Keys.CONTAINER, Type.STRING, "", Importance.HIGH, "Container or collection inside database")
-            .define(Keys.KEY, Type.STRING, "", Importance.HIGH, "Primary or secondary authentication key")
-            .define(Keys.TRAVERSAL, Type.STRING, "", Importance.HIGH, "Gremlin query to execute for every event. Use ${key.property} or ${value.property} marker to match fields in MAP and STRUCT messages. For primitive types use simple ${key} and ${value} markers instead. For arrays it is possible to match an entire array with ${key} or ${value} or specific zero-based position in an array with ${key[5]} or ${value[0]}.")
-    		.define(Keys.ENABLE_SKIP_ON_CONFLICT, Type.BOOLEAN, false, Importance.MEDIUM, "When enabled connector will skip over traversals that result in conflicting writes and just drop the records rather than fail and stall the flow of messages.")
-			.define(Keys.ENABLE_SSL, Type.BOOLEAN, true, Importance.MEDIUM, "Flag that controls whether SSL is enabled or disabled. SSL is required for Microsoft Azure Cosmos DB accounts but can be disabled for local testing with emulator.")
-			.define(Keys.MAX_WAIT_FOR_CONNECTION_MILLISECONDS, Type.INT, 15000, Importance.MEDIUM, "Amount of time a client would wait for a connection to Microsoft Azure Cosmos DB before giving up.")
-			.define(Keys.RECORD_WRITE_RETRY_COUNT, Type.INT, 3, Importance.MEDIUM, "Number of times to attempt to write a record to Microsoft Azure Cosmos DB account before giving up.")
-			.define(Keys.RECORD_WRITE_RETRY_MILLISECONDS, Type.INT, 1000, Importance.MEDIUM, "Default retry interval for a failed attempt to write a record into Microsoft Azure Cosmos DB account.");
+            .define(
+            		Keys.HOST, 
+            		Type.STRING, 
+            		"", 
+            		Importance.HIGH, 
+            		"Microsoft Azure Cosmos Gremlin Accounty fully qualified name in the format *.gremlin.cosmos.azure.com")
+            .define(
+            		Keys.PORT, 
+            		Type.INT, 
+            		KafkaGremlinSinkConnector.DEFAULT_PORT, 
+            		Importance.HIGH, 
+            		"Port number to which to send traffic at the host")
+            .define(
+            		Keys.DATABASE, 
+            		Type.STRING, 
+            		"", 
+            		Importance.HIGH, 
+            		"Database inside global database account")
+            .define(
+            		Keys.CONTAINER, 
+            		Type.STRING, 
+            		"", 
+            		Importance.HIGH, 
+            		"Container or collection inside database")
+            .define(
+            		Keys.KEY, 
+            		Type.STRING, 
+            		"", 
+            		Importance.HIGH, 
+            		"Primary or secondary authentication key")
+            .define(
+            		Keys.TRAVERSAL, 
+            		Type.STRING, 
+            		"", 
+            		Importance.HIGH, 
+            		"Gremlin query to execute for every event. Use ${key.property} or ${value.property} marker to match fields in MAP and STRUCT messages. For primitive types use simple ${key} and ${value} markers instead. For arrays it is possible to match an entire array with ${key} or ${value} or specific zero-based position in an array with ${key[5]} or ${value[0]}.")
+    		.define(
+    				Keys.ENABLE_SKIP_ON_CONFLICT, 
+    				Type.BOOLEAN, 
+    				KafkaGremlinSinkConnector.DEFAULT_ENABLE_SKIP_ON_CONFLICT, 
+    				Importance.MEDIUM, 
+    				"When enabled connector will skip over traversals that result in conflicting writes and just drop the records rather than fail and stall the flow of messages.")
+			.define(
+					Keys.ENABLE_SSL, 
+					Type.BOOLEAN, 
+					KafkaGremlinSinkConnector.DEFAULT_ENABLE_SSL, 
+					Importance.MEDIUM, 
+					"Flag that controls whether SSL is enabled or disabled. SSL is required for Microsoft Azure Cosmos DB accounts but can be disabled for local testing with emulator.")
+			.define(
+					Keys.MAX_WAIT_FOR_CONNECTION_MILLISECONDS,
+					Type.INT,
+					KafkaGremlinSinkConnector.DEFAULT_MAX_WAIT_FOR_CONNECTION_MILLISECONDS,
+					Importance.MEDIUM,
+					"Amount of time a client would wait for a connection to Microsoft Azure Cosmos DB before giving up.")
+			.define(
+					Keys.RECORD_WRITE_RETRY_COUNT, 
+					Type.INT, 
+					KafkaGremlinSinkConnector.DEFAULT_RECORD_WRITE_RETRY_COUNT, 
+					Importance.MEDIUM, 
+					"Number of times to attempt to write a record to Microsoft Azure Cosmos DB account before giving up.")
+			.define(
+					Keys.RECORD_WRITE_RETRY_MILLISECONDS, 
+					Type.INT, 
+					KafkaGremlinSinkConnector.DEFAULT_RECORD_WRITE_RETRY_MILLISECONDS, 
+					Importance.MEDIUM, 
+					"Default retry interval for a failed attempt to write a record into Microsoft Azure Cosmos DB account.");
 
     private String host;
     private String port;

@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @author olignat
  *
  */
-final class KafkaGremlinSinkTask extends SinkTask {
+public final class KafkaGremlinSinkTask extends SinkTask {
 
     private static final Logger log = LoggerFactory.getLogger(KafkaGremlinSinkTask.class);
     private static final Pattern timeSpanPattern = Pattern.compile("^(\\d+\\.)?(\\d+):(\\d+):(\\d+)(\\.\\d+)?$");
@@ -81,57 +81,67 @@ final class KafkaGremlinSinkTask extends SinkTask {
         if (props.containsKey(KafkaGremlinSinkConnector.Keys.ENABLE_SKIP_ON_CONFLICT)) {
         	this.enableSkipOnConflict = Boolean.parseBoolean(props.get(KafkaGremlinSinkConnector.Keys.ENABLE_SKIP_ON_CONFLICT));
         }
+        else {
+        	this.enableSkipOnConflict = KafkaGremlinSinkConnector.DEFAULT_ENABLE_SKIP_ON_CONFLICT;
+        }
 
         if (props.containsKey(KafkaGremlinSinkConnector.Keys.ENABLE_SSL)) {
         	this.enableSsl = Boolean.parseBoolean(props.get(KafkaGremlinSinkConnector.Keys.ENABLE_SSL));
+        }
+        else {
+        	this.enableSsl = KafkaGremlinSinkConnector.DEFAULT_ENABLE_SSL;
         }
 
         if (props.containsKey(KafkaGremlinSinkConnector.Keys.MAX_WAIT_FOR_CONNECTION_MILLISECONDS)) {
         	this.maxWaitForConnectionMilliseconds = Integer.parseInt(props.get(KafkaGremlinSinkConnector.Keys.MAX_WAIT_FOR_CONNECTION_MILLISECONDS));
         }
+        else {
+        	this.maxWaitForConnectionMilliseconds = KafkaGremlinSinkConnector.DEFAULT_MAX_WAIT_FOR_CONNECTION_MILLISECONDS;
+        }
 
         if (props.containsKey(KafkaGremlinSinkConnector.Keys.RECORD_WRITE_RETRY_COUNT)) {
         	this.recordWriteRetryCount = Integer.parseInt(props.get(KafkaGremlinSinkConnector.Keys.RECORD_WRITE_RETRY_COUNT));
+        }
+        else {
+        	this.recordWriteRetryCount = KafkaGremlinSinkConnector.DEFAULT_RECORD_WRITE_RETRY_COUNT;
         }
 
         if (props.containsKey(KafkaGremlinSinkConnector.Keys.RECORD_WRITE_RETRY_MILLISECONDS)) {
         	this.recordWriteRetryMilliseconds = Integer.parseInt(props.get(KafkaGremlinSinkConnector.Keys.RECORD_WRITE_RETRY_MILLISECONDS));
         }
+        else {
+        	this.recordWriteRetryMilliseconds = KafkaGremlinSinkConnector.DEFAULT_RECORD_WRITE_RETRY_MILLISECONDS;
+        }
         
         this.cluster = null;
         this.client = null;
 
-        try {
-            Cluster.Builder builder = Cluster.build();
-            builder.addContactPoint(this.host);
-            builder.port(this.port);
-            builder.maxWaitForConnection(this.maxWaitForConnectionMilliseconds);
-            
-            AuthProperties authenticationProperties = new AuthProperties();
-            authenticationProperties.with(AuthProperties.Property.USERNAME, String.format("/dbs/%s/colls/%s", this.database, this.container));
-            authenticationProperties.with(AuthProperties.Property.PASSWORD, this.key);
-            
-            builder.authProperties(authenticationProperties);
-            builder.enableSsl(this.enableSsl);
+        Cluster.Builder builder = Cluster.build();
+        builder.addContactPoint(this.host);
+        builder.port(this.port);
+        builder.maxWaitForConnection(this.maxWaitForConnectionMilliseconds);
+        
+        AuthProperties authenticationProperties = new AuthProperties();
+        authenticationProperties.with(AuthProperties.Property.USERNAME, String.format("/dbs/%s/colls/%s", this.database, this.container));
+        authenticationProperties.with(AuthProperties.Property.PASSWORD, this.key);
+        
+        builder.authProperties(authenticationProperties);
+        builder.enableSsl(this.enableSsl);
 
-            Map<String, Object> config = new HashMap<String, Object>();
-            config.put("serializeResultToString", "true");
-            
-            GraphSONMessageSerializerV1d0 serializer = new GraphSONMessageSerializerV1d0();
-            serializer.configure(config, null);
-            
-            builder.serializer(serializer);
-            
-            // Configure special load balancing strategy for Azure that ignores host unavailability 
-            // and continues to talk to the same host
-            builder.loadBalancingStrategy(new StickyLoadBalancingStrategy());
-            
-            this.cluster = builder.create();
-            this.client = cluster.connect();
-        }
-        catch (Exception ex) {
-            log.error(ex.getMessage());
-        }
+        Map<String, Object> config = new HashMap<String, Object>();
+        config.put("serializeResultToString", "true");
+        
+        GraphSONMessageSerializerV1d0 serializer = new GraphSONMessageSerializerV1d0();
+        serializer.configure(config, null);
+        
+        builder.serializer(serializer);
+        
+        // Configure special load balancing strategy for Azure that ignores host unavailability 
+        // and continues to talk to the same host
+        builder.loadBalancingStrategy(new StickyLoadBalancingStrategy());
+        
+        this.cluster = builder.create();
+        this.client = this.cluster.connect();
         
     	this.remainingRetries = this.recordWriteRetryCount;        
     }
@@ -143,7 +153,7 @@ final class KafkaGremlinSinkTask extends SinkTask {
         	log.debug("Executing {}", recordTraversal);
         	
             try {
-            	ResultSet resultSet = client.submit(recordTraversal);
+            	ResultSet resultSet = this.client.submit(recordTraversal);
             	List<Result> results = resultSet.all().get();
 				
             	if (results == null || results.isEmpty()) {

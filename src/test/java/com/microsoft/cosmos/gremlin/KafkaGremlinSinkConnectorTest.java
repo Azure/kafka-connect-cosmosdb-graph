@@ -5,6 +5,7 @@ package com.microsoft.cosmos.gremlin;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,12 @@ import com.microsoft.cosmos.gremlin.KafkaGremlinSinkConnector.Keys;
  */
 final public class KafkaGremlinSinkConnectorTest {
 
+	@Test
+	public void testReflectionContract() throws Exception {
+		assertTrue(Modifier.isPublic(KafkaGremlinSinkConnector.class.getModifiers()), "Sink connector must be public to be discoverable by Kafka");
+		assertTrue(KafkaGremlinSinkConnector.class.getConstructors().length > 0, "Sink connector must have a public constructor");
+	}
+	
 	@Test
 	public void testConfigurationDefinition() throws Exception {
 		KafkaGremlinSinkConnector connector = new KafkaGremlinSinkConnector();
