@@ -48,7 +48,7 @@ public final class KafkaGremlinSinkTask extends SinkTask {
 	private String database;
 	private String container;
 	private String key;
-	private String traversal;
+	private GremlinQueryBuilder.GremlinParameterizedQuery parameterizedTraversal;
 	private Boolean enableSkipOnConflict;
 	private Boolean enableSsl;
 	private Boolean enableErrorOnEmptyResult;
@@ -75,7 +75,10 @@ public final class KafkaGremlinSinkTask extends SinkTask {
 		this.database = props.get(KafkaGremlinSinkConnector.Keys.DATABASE);
 		this.container = props.get(KafkaGremlinSinkConnector.Keys.CONTAINER);
 		this.key = props.get(KafkaGremlinSinkConnector.Keys.KEY);
-		this.traversal = props.get(KafkaGremlinSinkConnector.Keys.TRAVERSAL);
+
+		// Process traversal and prepare for execution
+		this.parameterizedTraversal = GremlinQueryBuilder
+				.parameterize(props.get(KafkaGremlinSinkConnector.Keys.TRAVERSAL));
 
 		if (props.containsKey(KafkaGremlinSinkConnector.Keys.ENABLE_SKIP_ON_CONFLICT)) {
 			this.enableSkipOnConflict = Boolean
@@ -155,12 +158,15 @@ public final class KafkaGremlinSinkTask extends SinkTask {
 
 	public void put(Collection<SinkRecord> sinkRecords) {
 		for (SinkRecord sinkRecord : sinkRecords) {
-			// Materialize traversal template
-			String recordTraversal = GremlinQueryBuilder.build(traversal, sinkRecord);
-			log.debug("Executing {}", recordTraversal);
+			// Materialize traversal parameters
+			Map<String, Object> materializedTraversalParameters = GremlinQueryBuilder
+					.materialize(this.parameterizedTraversal, sinkRecord);
+			log.debug("Executing {} with {} parameters", this.parameterizedTraversal.getParameterizedTraversal(),
+					materializedTraversalParameters.size());
 
 			try {
-				ResultSet resultSet = this.client.submit(recordTraversal);
+				ResultSet resultSet = this.client.submit(this.parameterizedTraversal.getParameterizedTraversal(),
+						materializedTraversalParameters);
 				List<Result> results = resultSet.all().get();
 
 				if (results == null || results.isEmpty()) {

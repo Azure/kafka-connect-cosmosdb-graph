@@ -84,7 +84,7 @@ final public class KafkaGremlinSinkTaskTest {
 		// Get properties and configure traversal for primitive type
 		Map<String, String> taskConfiguration = KafkaGremlinSinkTaskTest.getRequiredConnectionProperties();
 		taskConfiguration.put(KafkaGremlinSinkConnector.Keys.TRAVERSAL, "g.addV().property('"
-				+ KafkaGremlinSinkTaskTest.COSMOS_EMULATOR_CONTAINER_PARTITIONKEY + "', '${key}')");
+				+ KafkaGremlinSinkTaskTest.COSMOS_EMULATOR_CONTAINER_PARTITIONKEY + "', ${key})");
 
 		// Create task
 		KafkaGremlinSinkTask task = new KafkaGremlinSinkTask();
@@ -147,8 +147,8 @@ final public class KafkaGremlinSinkTaskTest {
 		// Get properties and configure traversal for primitive type
 		Map<String, String> taskConfiguration = KafkaGremlinSinkTaskTest.getRequiredConnectionProperties();
 		taskConfiguration.put(KafkaGremlinSinkConnector.Keys.TRAVERSAL,
-				"g.addV().property('" + KafkaGremlinSinkTaskTest.COSMOS_EMULATOR_CONTAINER_PARTITIONKEY + "', '${key}')"
-						+ ".property('id', '${value}')");
+				"g.addV().property('" + KafkaGremlinSinkTaskTest.COSMOS_EMULATOR_CONTAINER_PARTITIONKEY + "', ${key})"
+						+ ".property('id', ${value})");
 
 		// Create task
 		KafkaGremlinSinkTask task = new KafkaGremlinSinkTask();
