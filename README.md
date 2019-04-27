@@ -56,11 +56,30 @@ On the next page please select **KafkaGremlinSinkConnector**. If this connector 
 ![Cosmos DB Graph Connector Configuration](/doc/azureportaldatabasecontainer.jpg)
 
 **traversal** - gremlin traversal to execute for every Kafka message published to the Kafka Topic and received by connector. Sample traversal could be adding a vertex for every event
+
 ```
 g.addV()
- .property('id', '${value.uid}')
- .property('email', '${value.emailAddress}')
- .property('language', '${value.language}')
+ .property('id', ${value.uid})
+ .property('email', ${value.emailAddress})
+ .property('language', ${value.language})
+```
+
+## Support event syntax
+Each Kafka event contains a `key` and a `value` properties, each of which has schema. Both can be resolved independently in a traversal template configured on a connector.
+
+| Schema type                                                         | Mapping                                 | Result                                             |
+| ------------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------- |
+| INT8, INT16, INT32, INT64, FLOAT32, FLOAT64, BOOLEAN, STRING        | `${key}` or `${value}`                  | Value as is                                        |
+| STRUCT                                                              | `${key.field}` or `${value.field}`      | Resolves to structure field                        |
+| MAP                                                                 | `${key.key}` or `${value.key}`          | Resolves to value of the key in the map            |
+| ARRAY                                                               | `${key[index]}` or `${value[index]}`    | Resolves to a positional element in an array       |
+| BYTES                                                               | `${key}` or `${value}`                  | Resolves to Java string representation of an array |
+
+Gremlin is a very powerful language as such a great deal of transformations of events can be done within gremlin itself on the server side.
+For example, Cosmos DB requires **id** property be string, but  incoming stream may carry id as integer.
+```
+g.addV()
+ .property('id', ${value.uid}.toString())
 ```
 
 # References
@@ -71,3 +90,5 @@ It is worth looking through this material to get better understanding how this c
 [Kafka, Avro Serialization, and the Schema Registry](https://dzone.com/articles/kafka-avro-serialization-and-the-schema-registry)
 
 [Spring Kafka - JSON Serializer Deserializer Example](https://codenotfound.com/spring-kafka-json-serializer-deserializer-example.html)
+
+[Gremlin Language Reference](http://tinkerpop.apache.org/docs/current/reference/)
